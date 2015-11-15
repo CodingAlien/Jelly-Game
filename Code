@@ -1,0 +1,489 @@
+import pygame, sys, math
+import random
+import time
+from time import sleep 
+
+pygame.init()
+
+#Making Colors
+BLACK    = (   0,   0,   0)
+WHITE    = ( 255, 255, 255)
+RED      = ( 255,   0,   0)
+BLUE     = (   0,   0, 255)
+
+MENU = 0
+ANIMATION = 1
+GAME = 2
+END = 3
+SHOP = 4
+game_state = MENU
+MOUSEDOWN = False
+lives = 3
+mousex = 0
+mousey = 0
+money = 0
+mousex1 = 0 
+mousey1 = 0
+score_font = pygame.font.SysFont("Android", 40)
+score_font1 = pygame.font.SysFont("AlternateGothic2 BT", 40)
+score_font2 = pygame.font.SysFont("AilternateGothic2 BT", 40)
+
+# == (1) Create 'global' variables ==
+# These are variables that every part of your
+# code can 'see' and change
+global screen, current_keys, ship_drag
+height = 500
+ 
+global ship_position, ship_rotation, shiprect, asteroid_surface, asteroid_surface_med
+#global asteroid_list
+global bullet_surface
+global bullet_list, Basik_position
+asteroid_list = []
+ship_position = [320, 240]
+Basik_position = [320, 240]
+ship_rotation = 0
+bullet_list = []
+
+screen_size = 1022,500
+initial_position = [random.randint(0, screen_size[0]), 0]
+current_animation_frame = 0
+animation_frames = []
+animation_speed = 5 # fps
+current_time = 0
+clock = pygame.time.Clock()
+
+def GameInit():
+    global screen, shiprect, Background, backrect, spaceship, Zombrect, Zombie, Play, Playrect
+    global zombieList, asteroid_surface, asteroid_list, bullet_surface, asteroid_surface_med, asteroid_surface_small
+    global current_keys, last_keys, uluse, uluze, PlayButton, Play, Image1, Animation1
+    global Animation2, Image2, Animation3, Image3, ANIMATIOn, MOUSEDOWN, StartBackground, SlimeBck
+    global PlayAgain, GameBackground
+    global current_animation_frame, animation_frames
+    global GameBack1, MenuBack, SHOPimage, shopImageRect
+    global continuething, ContButton, sHoPButton, sh0Prect, money, GoBackImage, GoBackrekt
+    global Hat1, Basik, Hat2, Burrito
+    Hat2 = pygame.image.load("BurritoHat.png")
+    Burrito = Hat2.get_rect()
+    Hat1 = pygame.image.load("BasikHat.png")
+    Basik = Hat1.get_rect()
+    GoBackImage = pygame.image.load("GoBackButton.png")
+    GoBackrekt = GoBackImage.get_rect()
+    SHOPimage = pygame.image.load("SHOP MENU.png")
+    shopImageRect = SHOPimage.get_rect()
+    sHoPButton = pygame.image.load("sHoPButton.png")
+    sh0Prect = sHoPButton.get_rect()
+    continuething = pygame.image.load("Continue.png")
+    ContButton = continuething.get_rect()
+    GameBack1 = pygame.image.load("Game Background.png")
+    MenuBack = GameBack1.get_rect()
+    GameBackground = pygame.image.load("Game Background.png")
+    Animation1 = pygame.image.load("Animation1.png")
+    Image1 = Animation1.get_rect()
+    Animation2 = pygame.image.load("Animation2.png")
+    Image2 = Animation2.get_rect()
+    Animation3 = pygame.image.load("Animation3.png")
+    Image3 = Animation3.get_rect()
+    PlayButton = pygame.image.load("PlayTestButton.png")
+    Play = PlayButton.get_rect().move(0, 238)
+
+    ContButton = continuething.get_rect().move(500, 238)
+    sh0Prect = sh0Prect.move(0, 400)
+    GoBackrekt = GoBackrekt.move(0, 500)
+    Basik = Basik.move(100, 180)
+    Burrito = Burrito.move(250, 180)
+
+    animation_frames = [Animation1, Animation2, Animation3]
+
+    asteroid_surface = pygame.image.load("Bad Jelly.png")
+    asteroid_surface_small = pygame.image.load("Bad Jelly_Small.png")
+    asteroid_surface_med = pygame.image.load("Bad Jelly_Med.png")
+    asteroid_rect1 = asteroid_surface.get_rect()
+    asteroid_rect2 = asteroid_surface_med.get_rect()
+    asteroid_rect3 = asteroid_surface_small.get_rect()
+    spaceship = pygame.image.load("Jelly Person.png")
+    Background = pygame.image.load("Background.png")
+    backrect = Background.get_rect()
+    current_keys = pygame.key.get_pressed()
+    shiprect = spaceship.get_rect()
+    bullet_surface = pygame.image.load("Gum Balls.png")
+    SlimeBck = pygame.image.load("SlimeBack.jpg")
+    StartBackground = SlimeBck.get_rect()
+    #shiprect = shiprect.move(448, 240)
+    pygame.init()
+    last_keys = pygame.key.get_pressed()
+    screen = pygame.display.set_mode((1024,579))
+    GameReset()
+
+    if shiprect.top < 0:
+        shiprect.top = 0
+    if shiprect.bottom > height:
+        shiprect.bottom = height         
+
+                      
+# == GameInit ==               
+# Put initialisation stuff here
+# it is called just once
+# at the beginning of our game ship_surface
+def GameInit_none():
+    global screen, shiprect, Background, backrect, spaceship, Zombrect, Zombie, Play, Playrect
+    global zombieList
+    spaceship = pygame.image.load("Space Ship.png")
+    Background = pygame.image.load("Space Background(1).png")
+    backrect = Background.get_rect()
+
+    shiprect = spaceship.get_rect()
+    #shiprect = shiprect.move(448, 240)
+    pygame.init()
+    screen = pygame.display.set_mode((1024,640))
+
+def GameReset():
+    global bullet_list, asteroid_list
+    bullet_list = []
+    for index in range(5):
+        bullet = {
+            "velocity":[0,0],
+            "position":[0,0],
+            "active":False
+            }
+        bullet_list.append(bullet)
+
+    asteroid_list = []
+    for index in range(5):
+ 
+        # velocity in the range -0.3 to 0.3 for x and y
+        initial_velocity = [random.randint(-30, 30) / 10, random.randint(-30, 30) / 10]
+        # position randomly along the top edge of the screen
+        initial_position = [random.randint(0, screen_size[0]), 0]
+        asteroid = {
+            
+            "size":40,
+            "rotation":random.randint(0, 360),
+            "velocity":initial_velocity,
+            "position":initial_position,
+            "active":True
+            }
+        asteroid_list.append(asteroid)
+        asteroid_list.append(asteroid)
+def DrawGameScreen():
+    global screen, ship_position, asteroid_surface,asteroid_list, score_font1, RED, MENU, END, GAME, game_state
+    global MOUSEBUTTONDOWN, time, Image1, Animation1, Animation2, Image2, ANIMATION, text, MOUSEDOWN, mousey
+    global mousex, StartBackground, Play, PlayButton, current_animation_frame, animation_frames, current_time, clock
+    global continuething, ContButton, sHoPButton, sh0Prect, money, time1, score_font1, BLUE, Basik, Hat1, Hat2, Burrito
+
+    #pygame.event.get()
+    if game_state == MENU:
+        screen.blit(GameBack1, MenuBack)
+        screen.blit(PlayButton, Play)  
+        screen.blit(sHoPButton, sh0Prect)
+      ##print(str(MOUSEDOWN) + ": (" + str(mousex) + "," + str(mousey) + ")")
+    if game_state == SHOP:
+        screen.blit(SHOPimage, shopImageRect)
+        screen.blit(GoBackImage, GoBackrekt)
+        screen.blit(Hat1, Basik)
+        screen.blit(Hat2, Burrito)
+
+    if game_state == ANIMATION:
+        current_time = current_time + clock.get_time()
+        if MOUSEDOWN and Image1.collidepoint(mousex, mousey) and current_animation_frame == 1:
+            MOUSEDOWN = True
+            screen.blit(Animation2, Image2)
+        if MOUSEDOWN and Image2.collidepoint(mousex, mousey) and current_animation_frame == 2:
+            MOUSEDOWN = True
+            screen.blit(Animation3, Image3)
+            screen.blit(continuething, ContButton)  
+
+        if current_time > animation_speed*1000 and current_animation_frame < len(animation_frames) : 
+            current_time = current_time + clock.get_time()
+            image = animation_frames[current_animation_frame] 
+            screen.blit(image, image.get_rect())
+            current_animation_frame = (current_animation_frame + 1)
+            current_time = current_time - animation_speed*1000
+            if current_animation_frame == 3:
+                screen.blit(continuething, ContButton)
+    elif game_state == GAME or game_state == END:
+        rotated_surface = pygame.transform.rotate(spaceship, ship_rotation)
+        surface_centre = rotated_surface.get_rect().center
+        draw_centre = [ship_position[0] - surface_centre[0], ship_position[1] - surface_centre[1]]
+        screen.blit(rotated_surface, draw_centre)
+
+        for asteroid in asteroid_list:
+            if asteroid["active"]:
+                if asteroid["size"] == 40:
+                    rotated_surface = pygame.transform.rotate(asteroid_surface, asteroid["rotation"])
+                elif asteroid["size"] == 20:
+                    rotated_surface = pygame.transform.rotate(asteroid_surface_med, asteroid["rotation"])
+                else:
+                    rotated_surface = pygame.transform.rotate(asteroid_surface_small, asteroid["rotation"])
+     
+                surface_centre = rotated_surface.get_rect().center
+                draw_centre = [asteroid["position"][0] - surface_centre[0], asteroid["position"][1] - surface_centre[1]]
+                screen.blit(rotated_surface, draw_centre)
+
+        for bullet in bullet_list:
+            if bullet["active"]:
+                surface_centre = bullet_surface.get_rect().center
+                draw_centre = [bullet["position"][0] - surface_centre[0], bullet["position"][1] - surface_centre[1]]
+                screen.blit(bullet_surface, draw_centre)
+
+        if game_state == END:
+            #print(money)
+            text = score_font.render("You died. Press Space to Start!", 1, RED)
+            text1 = score_font1.render("Press L to shop", 1, BLUE)
+            screen.blit(text, (screen_size[0] / 5, screen_size[1] / 5))
+            screen.blit(text1, (screen_size[1] /7, screen_size[1] / 9))
+
+def MoneyMakingMachine():
+    global SHOP, Basik, Money, GAME, current_keys, game_state, current_keys, Basik_position
+    if money > 50 and game_state == SHOP and MOUSEDOWN and Basik.collidepoint(mousex, mousey):
+        print("Wow you have equipped BASIK")
+        screen.blit(Hat1, Basik)
+        print(money)
+    if current_keys[pygame.K_LEFT]:
+        Basik_position[0] -= 20
+    if current_keys[pygame.K_RIGHT]: 
+        Basik_position[0] += 20   
+    if current_keys[pygame.K_UP]:
+        Basik_position[1] -= 20
+    if current_keys[pygame.K_DOWN]:
+        Basik_position[1] += 20
+    if game_state == END and current_keys[pygame.K_l]:
+        game_state = SHOP
+        print("Stop trying")
+    if game_state == GAME:
+        text2 = score_font2.render("Money")
+
+
+
+def NewAsteroid(size, position):
+    global asteroid_list
+    added = False
+    for asteroid in asteroid_list:
+        if not added and not asteroid["active"]:
+            added = True
+            asteroid["size"] = size
+            asteroid["rotation"] = random.randint(0, 360)
+            asteroid["velocity"] = [random.randint(-30, 30) / 10, random.randint(-30, 30) / 10]
+            asteroid["position"] = position[:]
+            asteroid["active"]  = True
+    if not added:
+        new_asteroid = {
+                "size": size,
+                "rotation":random.randint(0, 360),
+                "velocity":[random.randint(-30, 30) / 10, random.randint(-30, 30) / 10],
+                "position":position[:],
+                "active":True
+                }
+        asteroid_list.append(new_asteroid) 
+
+def ActiveAsteroids():
+    global asteroid_list
+    numOfActive = 0
+    for asteroid in asteroid_list:
+        if asteroid["active"]:
+            numOfActive = numOfActive + 2
+
+    return numOfActive
+
+def UpdateGameScreen():
+    global current_keys, ship_rotation, ship_position, mouse_position, asteroid_list
+    global fire, last_keys, game_state, lives, initial_position, money, ANIMATION, MOUSEDOWN, GAME
+    global Hat1, Basik, SHOP, PlayButton, Play, MENU
+
+    if current_keys[pygame.K_LEFT]:
+        ship_position[0] -= 20
+    if current_keys[pygame.K_RIGHT]: 
+        ship_position[0] += 20   
+    if current_keys[pygame.K_UP]:
+        ship_position[1] -= 20
+    if current_keys[pygame.K_DOWN]:
+        ship_position[1] += 20
+    if current_keys[pygame.K_SPACE] and not last_keys[pygame.K_SPACE]:
+        for bullet in bullet_list:
+            if bullet["active"] == False:
+                bullet["position"] = ship_position[:]
+                bullet["velocity"][0] = -15 * math.sin(math.radians(ship_rotation))
+                bullet["velocity"][1] = -15 * math.cos(math.radians(ship_rotation))
+                bullet["active"] = True
+                break
+    if MOUSEDOWN and game_state == GAME:
+        MOUSEDOWN = True
+        for bullet in bullet_list:
+            if bullet["active"] == False:
+                bullet["position"] = ship_position[:]
+                bullet["velocity"][0] = -15 * math.sin(math.radians(ship_rotation))
+                bullet["velocity"][1] = -15 * math.cos(math.radians(ship_rotation))
+                bullet["active"] = True
+                break
+
+
+    for bullet in bullet_list:
+        if bullet["active"]:
+            bullet["position"][0] += bullet["velocity"][0]
+            bullet["position"][1] += bullet["velocity"][1]
+                
+            if bullet["position"][0] < 0 or bullet["position"][0] > screen_size[0]:
+                bullet["active"] = False
+            if bullet["position"][1] < 0 or bullet["position"][1] > screen_size[1]:
+                bullet["active"] = False
+
+    for bullet in bullet_list:
+        if bullet["active"]:
+            for asteroid in asteroid_list:
+                if asteroid["active"]:
+                    x_distance = bullet["position"][0] - asteroid["position"][0]
+                    y_distance = bullet["position"][1] - asteroid["position"][1]
+                    if math.sqrt(x_distance * x_distance + y_distance * y_distance) < asteroid["size"] + 8:
+                        money = money + 1
+                        bullet["active"] = False
+                        asteroid["active"] = False
+
+                        if asteroid["size"] > 16:
+                            for index in range(4):
+                                NewAsteroid(asteroid["size"]/2, asteroid["position"])
+                        else:
+                            if ActiveAsteroids() < 4:
+                               NewAsteroid(40, initial_position)
+
+    
+    for asteroid in asteroid_list:
+        active_asteroids = 0
+        if asteroid["active"]:
+            active_asteroids = active_asteroids + 1
+            x_distance = ship_position[0] - asteroid["position"][0]
+            y_distance = ship_position[1] - asteroid["position"][1]
+            if math.sqrt(x_distance * x_distance + y_distance * y_distance) < asteroid["size"] + 32:
+                game_state = END 
+
+                #GameReset()
+
+       
+
+    dx = (mouse_position[0] - ship_position[0])
+    dy = (mouse_position[1] - ship_position[1])
+    if dy == 0:
+        ship_rotation = 0
+    elif dy > 0:
+        ship_rotation =  180 + math.atan(dx / dy) * 180 / math.pi
+    else:
+        ship_rotation =  math.atan(dx / dy) * 180 / math.pi
+
+    if shiprect.top < 0:
+        shiprect.top = 0     
+    if shiprect.bottom > height:
+        shiprect.bottom = height
+
+   #if current_keys[pygame.K_SPACE] and not last_keys[pygame.K_SPACE]:
+    #   for bullet in bullet_list:
+     #      if bullet["active"] == False:
+      #         bullet["position"] = ship_position[:]
+       #        bullet["velocity"][0] = -15 * math.sin(math.radians(ship_rotation))
+        #       bullet["velocity"][1] = -15 * math.cos(math.radians(ship_rotation))
+         #      bullet["active"] = True
+          #     break
+
+
+
+    for asteroid in asteroid_list:
+        if asteroid["active"]:
+            asteroid["position"][0] += asteroid["velocity"][0]
+            asteroid["position"][1] += asteroid["velocity"][1]
+ 
+            if asteroid["position"][0] < 0:
+                asteroid["position"][0] = screen_size[0]
+            if asteroid["position"][0] > screen_size[0]:
+                asteroid["position"][0] = 0
+            if asteroid["position"][1] < 0:
+                asteroid["position"][1] = screen_size[1]
+            if asteroid["position"][1] > screen_size[1]:
+                asteroid["position"][1] = 0
+ 
+            asteroid["rotation"] += 1
+
+# == GameLoop ==
+# Put things that have to occur repeatedly
+# here. It is called every frame 
+def GameLoop(shiprect):
+    global current_keys,last_keys, mouse_position, fire, game_state, GAME, END, MENU
+    global score, MOUSEDOWN, mousex, mousey , clock, current_time, current_animation_frame
+    global Hat1, Basik
+
+                               
+    # GameUpdate functions will go here
+    # GameDraw functions will go here
+    
+    # Lock the timing to 60 frames per second
+    clock.tick(60)
+
+    last_keys = current_keys
+    current_keys = pygame.key.get_pressed()
+
+    # Check for exit
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEMOTION:
+            mouse_position = event.pos
+            mousex, mousey = event.pos
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            MOUSEDOWN = True
+        else:
+            MOUSEDOWN = False
+
+     
+    # update our key states 
+    if game_state == GAME:
+        UpdateGameScreen()
+    else:
+        if current_keys[pygame.K_SPACE]:
+            print("Shoot")
+            game_state = GAME
+            GameReset()
+       #if current_keys[pygame.K_L]:
+
+
+    if game_state == MENU:       
+        if MOUSEDOWN and Play.collidepoint(mousex, mousey):
+            current_time = 5000
+            MOUSEDOWN = False 
+            game_state = ANIMATION
+
+        if MOUSEDOWN and sh0Prect.collidepoint(mousex, mousey):
+            MOUSEDOWN = True
+            game_state = SHOP
+        if game_state == SHOP:
+            print(" It is shopping time")
+    if game_state == SHOP:
+        if MOUSEDOWN and GoBackrekt.collidepoint(mousex, mousey):
+            MOUSEDOWN = True
+            game_state = MENU
+
+
+    elif game_state == ANIMATION:
+        if current_animation_frame == 3 and MOUSEDOWN and ContButton.collidepoint(mousex, mousey):
+            MOUSEDOWN = False
+            game_state = GAME
+    elif game_state == GAME:
+        screen.blit(Background, backrect)
+
+    #Drawing the characters & Background
+    #screen.blit(Background, backrect)
+    #screen.blit(spaceship, shiprect)
+
+    MoneyMakingMachine()
+
+    DrawGameScreen()
+
+    # flip the screen
+    pygame.display.flip()
+
+
+ 
+# == (3) Call the functions to run the game ==
+# We have only *defined* our functions above.
+# Here we actually call them to make them happen
+GameInit()
+
+while True:
+    #screen.blit(Background, backrect)
+    GameLoop(shiprect)
